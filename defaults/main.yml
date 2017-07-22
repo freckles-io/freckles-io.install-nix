@@ -1,0 +1,6 @@
+---
+# defaults file for ansible-nix-pkg-mgr
+nix_installer_url: https://nixos.org/nix/install
+add_to_path: true
+rc_files_to_add_path_to:
+  - "{{ ansible_env.HOME }}/.profile"

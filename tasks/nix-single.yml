@@ -1,0 +1,73 @@
+---
+# tasks file for ansible-nix-single
+
+- name: check whether nix-installer line is already present in .profile
+  command: grep -q "# added by Nix installer" "{{ ansible_env.HOME }}/.profile"
+  register: nix_line
+  check_mode: false
+  ignore_errors: true
+  changed_when: false
+  when: 'nix_env_binary.stat.exists == false'
+
+- name: create /nix directory
+  file: path=/nix state=directory owner="{{ ansible_env.USER | default('root') }}"
+  become: yes
+  when: 'nix_env_binary.stat.exists == False'
+
+- name: install nix dependencies for Debian-based systems
+  apt: pkg="{{item}}" state=installed
+  with_items:
+    # - wget
+    # - curl
+    - bzip2
+    - ca-certificates
+    - libdigest-sha-perl
+  become: yes
+  when: 'nix_env_binary.stat.exists == False and ansible_os_family == "Debian"'
+
+- name: install nix dependencies for Redhat-based systems
+  yum: pkg="{{item}}" state=installed
+  with_items:
+    - bzip2
+    - perl-Digest-SHA
+  become: yes
+  when: 'nix_env_binary.stat.exists == False and ansible_os_family == "RedHat"'
+
+- name: download nix installer script
+  become: no
+  get_url:
+    url: "{{ nix_installer_url }}"
+    dest: "/tmp/nix_install.sh"
+    mode: 0755
+
+- name: enable nix install as root
+  become: yes
+  lineinfile:
+    path: /etc/nix/nix.conf
+    line: 'build-users-group ='
+    create: yes
+  when: 'ansible_env.USER is not defined or ansible_env.USER == "root"'
+
+- name: run nix installer
+  become: no
+  shell: /tmp/nix_install.sh
+  args:
+    creates: "{{ ansible_env.HOME  }}/.nix-profile/bin/nix-env"
+  environment:
+    USER: "{{ ansible_env.USER | default('root') }}"
+
+- name: remove nix-added line in .profile
+  lineinfile: dest="{{ ansible_env.HOME }}/.profile" regexp='# added by Nix installer' state=absent
+  ignore_errors: true
+  when: 'nix_line.rc == 1'
+
+- name: add nix path to path in .profile
+  become: no
+  lineinfile:
+    dest: "{{ item }}"
+    line: "if [ -e \"$HOME/.nix-profile/etc/profile.d/nix.sh\" ]; then source \"$HOME/.nix-profile/etc/profile.d/nix.sh\"; fi  # added by freckles"
+    create: yes
+  when: 'nix_env_binary.stat.exists == False and add_to_path'
+  ignore_errors: true
+  with_items:
+    - "{{ rc_files_to_add_path_to }}"
