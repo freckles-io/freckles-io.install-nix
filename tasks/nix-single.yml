@@ -18,7 +18,7 @@
   apt: pkg="{{item}}" state=installed
   with_items:
     # - wget
-    # - curl
+    - curl
     - bzip2
     - ca-certificates
     - libdigest-sha-perl
