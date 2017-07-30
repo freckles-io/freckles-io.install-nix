@@ -1,7 +1,7 @@
 ---
 # tasks file for ansible-nix-single
 
-- name: check whether nix-installer line is already present in .profile
+- name: test whether nix-installer line is already present in .profile
   command: grep -q "# added by Nix installer" "{{ ansible_env.HOME }}/.profile"
   register: nix_line
   check_mode: false
@@ -61,7 +61,7 @@
   ignore_errors: true
   when: 'nix_line.rc == 1'
 
-- name: add nix path to path in .profile
+- name: add nix path
   become: no
   lineinfile:
     dest: "{{ item }}"
