@@ -55,6 +55,7 @@
     creates: "{{ ansible_env.HOME  }}/.nix-profile/bin/nix-env"
   environment:
     USER: "{{ ansible_env.USER | default('root') }}"
+    ALLOW_PREEXISTING_INSTALLATION: "x"
 
 - name: remove nix-added line in .profile
   lineinfile: dest="{{ ansible_env.HOME }}/.profile" regexp='# added by Nix installer' state=absent
