@@ -9,12 +9,12 @@
 #   changed_when: false
 #   when: 'nix_env_binary.stat.exists == false'
 
-- name: create /nix directory
+- name: creating /nix directory
   file: path=/nix state=directory owner="{{ ansible_env.USER | default('root') }}"
   become: yes
   when: 'nix_env_binary.stat.exists == False'
 
-- name: install nix dependencies for Debian-based systems
+- name: installing nix dependencies for Debian-based systems
   apt: pkg="{{item}}" state=installed
   with_items:
     # - wget
@@ -25,7 +25,7 @@
   become: yes
   when: 'nix_env_binary.stat.exists == False and ansible_os_family == "Debian"'
 
-- name: install nix dependencies for Redhat-based systems
+- name: installing nix dependencies for Redhat-based systems
   yum: pkg="{{item}}" state=installed
   with_items:
     - bzip2
@@ -33,14 +33,14 @@
   become: yes
   when: 'nix_env_binary.stat.exists == False and ansible_os_family == "RedHat"'
 
-- name: download nix installer script
+- name: downloading nix installer script
   become: no
   get_url:
     url: "{{ nix_installer_url }}"
     dest: "/tmp/nix_install.sh"
     mode: 0755
 
-- name: enable nix install as root
+- name: applying fix to enable nix install as root
   become: yes
   lineinfile:
     path: /etc/nix/nix.conf
@@ -48,7 +48,7 @@
     create: yes
   when: 'ansible_env.USER is not defined or ansible_env.USER == "root"'
 
-- name: run nix installer
+- name: running nix installer
   become: no
   shell: /tmp/nix_install.sh
   args:
@@ -58,7 +58,7 @@
     ALLOW_PREEXISTING_INSTALLATION: "x"
   when: "ansible_os_family != 'Darwin'"
 
-- name: run nix installer on Mac OS X
+- name: running nix installer on Mac OS X
   become: no
   shell: /tmp/nix_install.sh
   args:
