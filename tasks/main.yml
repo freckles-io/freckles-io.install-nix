@@ -7,5 +7,5 @@
   register: nix_env_binary
 
 - name: "[starting nix single install]"
-  include: nix-single.yml
+  include_tasks: nix-single.yml
   when: nix_env_binary.stat.exists == False
