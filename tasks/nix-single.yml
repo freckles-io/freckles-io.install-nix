@@ -26,7 +26,7 @@
   when: 'nix_env_binary.stat.exists == False and ansible_os_family == "Debian"'
 
 - name: installing nix dependencies for Redhat-based systems
-  yum: pkg="{{item}}" state=installed
+  package: pkg="{{item}}" state=installed
   with_items:
     - bzip2
     - perl-Digest-SHA
