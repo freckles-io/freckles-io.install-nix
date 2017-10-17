@@ -15,7 +15,7 @@
   when: 'nix_env_binary.stat.exists == False'
 
 - name: installing nix dependencies for Debian-based systems
-  apt: pkg="{{item}}" state=installed update_cache=yes
+  apt: pkg="{{item}}" state=installed update_cache=yes cache_valid_time=3600
   with_items:
     # - wget
     - curl
